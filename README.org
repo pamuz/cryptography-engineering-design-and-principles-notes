@@ -1,0 +1,215 @@
+* READLOG
+[2018-01-21 Sun 19:28]
+
+| Date             | Last page read |
+|------------------+----------------|
+| <2018-01-21 Sun> |             73 |
+
+* Introduction
+[2018-01-21 Sun 19:40]
+
+I will adhere to the proposed 12-week syllabus:
+
+- Week 1: Chapters 1 and 2;
+- Week 2: Chapters 3 and 4;
+- Week 3: Chapters 5 and 6;
+- Week 4: Chapter 7;
+- Week 5: Chapters 8 and 9;
+- Week 6: Chapters 9 (continued) and 10; Week 7: Chapters 11 and 12;
+- Week 8: Chapters 13 and 14;
+- Week 9: Chapters 15 and 16;
+- Week 10: Chapters 17 and 18;
+- Week 11: Chapters 19 and 20;
+- Week 12: Chapter 21.
+  
+* Chapter 1: The Context of Cryptography
+[2018-01-21 Sun 19:42]
+
+Cryptography is the part of security that has to deal with
+distinguishing good access from bad access, and this is a very hard
+thing to do.
+
+The most important concept is:
+
+#+BEGIN_QUOTE
+A security system is only as strong as its weakest link.
+#+END_QUOTE
+
+Engineers often have a hard time working on security because of the
+adversarial nature of the problem. For example, a civil engineer may
+have to battle the elements and physics, but these are not forces that
+are actively trying to bring the project down. In security we must
+assume that there are very intelligent individuals purposefully trying
+to find holes in our systems. The book calls this the =adversarial
+setting=.
+
+An example: SET is a protocol for online shopping with a credit
+card. It contemplates things like sending the encrypted credit card
+number to the bank, and optionally to the vendor too. However, Most
+credit card numbers that are stolen are not intercepted while in
+transit between the consumer and the merchant. They are stolen from
+the merchant’s database. SET only protects the information while it is
+in transit.
+
+* Chapter 2: Introduction to Cryptography
+[2018-01-21 Sun 20:07]
+
+Encryption is the original goal of cryptography.
+
+Storing information can be thought of in terms of transmitting a
+message in time, rather than in space.
+
+Some terminology:
+
+- Alice :: What we name our sender
+- Bob :: What we name our recipient
+- Eve :: A malicious attacker
+- Plaintext :: A message, as was written by alice.
+- Ciphertext :: The plaintest message after it has been encrypted with
+                some key $K$.
+
+                
+
+*Kerckhoff's principle*: The security of the encryption scheme must
+ depend only on the secrecy of the key $K_e$, and not on the secrecy
+ of the algorithm.
+ 
+
+Another problem is *authentication*. Eve can do more than just listen
+in on the message sent from Alice to Bob. Eve could change the message
+in some way, or forge a mesage, or rearrange the order in which Bob
+receives messages. Once Bob recieves a message, even if it is
+encrypted, how can he be sure that it is a message from Alice?
+
+Authentication, like encryption uses a secret key that both Alice and
+Bob know. We will call this key $K_a$. When Alice sends the message
+$m$, she ocmputes the /message authentication code/, or MAC as $a :=
+h(K_a, m)$. Alice now sends both $m$ and $a$ to Bob. When Bob receives
+them, he recomputes what $a$ should have been using the key $K_a$,
+that way, if the message has been tampered with and is now $m'$, the
+computed $a$ won't match the sent $a$.
+
+Even with encryption and authentication Eve could still do some stuff,
+like repeating messages previously sent by Alice, imagine, for
+example, that the message represents a payment, Eve could drain the
+funds of Alice by repeating the payment message to Bob, who would
+charge her as many times as messages are sent. To stop this and other
+attacks a numbering mechanism is often used along with encryption and
+authentication.
+
+It is very important that we do not confuse the terms /encryption/ and
+/authentication/. Encrypting a message doesn’t stop manipulation of
+its contents, and authenticating a message doesn’t keep the message
+secret.
+
+There is still the issue of how Alice and Bob exchanged keys. It makes
+no sense to send it through the same channel as the message, as then
+Eve could intercept both the key and the message. Perhaps they
+exchanged them through some other channel, maybe even in person. But
+then, each person would need to exchange keys which each other they
+intend to establish communications with, and this quickly gets out of
+hand.
+
+Establishing cryptographic keys is an age-old problem, and one
+important contribution to the solution is public-key cryptography.
+
+Public-key cryptography introduces the concept that the key to encrypt
+a message is different from the key to decrypt that message.
+
+An obvious requirement for public-key cryptography mechanisms is that
+the secret key should not be obtainable from the public key.
+
+Digital signatures are the public-key equivalent of message
+authentication codes.
+
+Kinds of attacks:
+
+- Ciphertext-only :: When the attacker only has access to the
+     ciphertext.
+- Known-plaintext :: Here an attacker knows both the plaintext and the
+     ciphertext and he wants to compute the key that converted that
+     plaintext into that ciphertext, once the key is known, further
+     ciphertext can be deciphered.
+- Chosen-plaintext attack :: Like the /known-plaintext/ attack, but
+     here the attacker can somehow choose the plaintext. For example,
+     the attacker might send Alice an e-mail that she knows Alice will
+     forward to Bob.
+- Chosen-ciphertext :: For every plaintext that you choose, you get
+     the corresponding ciphertext, and for any ciphertext you choose,
+     you get the corresponding plaintext.
+- Distinguishing attack :: Attacks that reveal some information other
+     than the key or the plaintext, for example, the imperfection of
+     an algorithm.
+- Other types :: The attacks above are not an exhaustive list.
+                 
+
+Brithday attacks are named after the birthday paradox, basically it is
+an attack that depends on the fact that duplicate values, called
+/collisions/ appear much faster than expected. In general, if an
+element can take on $N$ different values, then you can expect the
+first collision after choosing about $\sqrt{N}$ random elements.
+The math behind this is the following:
+
+If you have a system where something can take on $N$ different values,
+if you choose $k$ elements, then there are $k(k - 1)/2$ pairs (the
+over two is there to not double count the same pairs with the elements
+in swapped position). Each chose has a $1/N$ chance of being a pair of
+equal values. Therefore, the chance of finding a collision is close to
+$k(k-1)/2N$. When $k \approx \sqrt{N}$, the chance is close to 50%.
+
+The /Meet-in-the-middle/ attacks are cousins to the brithday
+attacks. Here, an attacker chooses a number of different keys at
+random (the number has to be close to the $\sqrt{N}$ we discussed
+previously, and computes the MAC with each key over a known message
+that is sent, for example "Are you ready to receive a
+transaction?". Then he eavesdrops on each transaction and checks if
+the MAC of the first message appears on his table, if it does, then he
+immediately knows the corresponding key, or at least a key with very
+good odds of being the actual one being used. This attacks
+differentiates itself from the birthday attack in that, with the
+birthday attack, you wait for a single value to occur twice within the
+same set of elements, with meet-in-the-middle you have two sets, and
+wait for an overlap between the two sets.
+
+Any system designed today really needs at least a 128-bit security
+level. That means that any attack will require at least $2^128$ steps.
+
+The more complex a system, the more likely it has security
+problems. Indeed, we like to say that complexity is the worst enemy of
+security. This is a simple statement, but it took us a while to really
+understand it.
+
+By definition, an attacker wins by finding any aspect that wasn’t
+tested.
+
+* Selected Exercises
+[2018-01-21 Sun 20:53]
+
+** Chapter 2
+[2018-01-21 Sun 20:53]
+
+*** Exercise 2.3
+[2018-01-21 Sun 21:01]
+
+#+BEGIN_emph
+Consider a group of 30 people who wish to establish pair-wise secure
+communications using symmetric-key cryptography. How many keys need to
+be exchanged in total?
+#+END_emph
+
+Each people needs to trade with every other, except themselves so we
+are looking at $30 \times 29$, however, here we are double counting
+the exchange $(a, b)$ and $(b, a)$ so the total is really $\frac{30
+\times 29}{2} \approx 435$
+
+*** Exercise 2.7
+[2018-01-21 Sun 20:55]
+
+#+BEGIN_emph
+Exercise 2.7 Consider a symmetric-key cryptosystem in which
+cryptographic keys are randomly selected from the set of all n-bit
+strings. Approximately what should n be in order to provide 128 bits
+of security against a birthday attack?
+#+END_emph
+
+$(2^{128})^2 = 2^{256}$
